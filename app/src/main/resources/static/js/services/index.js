@@ -1,58 +1,58 @@
-/*
-  Import the openModal function to handle showing login popups/modals
-  Import the base API URL from the config file
-  Define constants for the admin and doctor login API endpoints using the base URL
+// index.js
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.createElement('form');
+    loginForm.innerHTML = `
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <select id="roleSelector">
+            <option value="admin">Admin</option>
+            <option value="doctor">Doctor</option>
+        </select>
+        <button type="submit">Login</button>
+    `;
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('roleSelector').value;
 
-  Use the window.onload event to ensure DOM elements are available after page load
-  Inside this function:
-    - Select the "adminLogin" and "doctorLogin" buttons using getElementById
-    - If the admin login button exists:
-        - Add a click event listener that calls openModal('adminLogin') to show the admin login modal
-    - If the doctor login button exists:
-        - Add a click event listener that calls openModal('doctorLogin') to show the doctor login modal
+        // Simulate login (replace with API call later)
+        const token = btoa(`${username}:${password}:${role}`); // Base64 encode for demo
+        localStorage.setItem('jwtToken', token);
+        localStorage.setItem('userRole', role);
 
+        // Redirect based on role (simulated)
+        if (role === 'admin') {
+            window.location.href = '/admin/dashboard';
+        } else if (role === 'doctor') {
+            window.location.href = '/doctor/dashboard';
+        }
+    });
 
-  Define a function named adminLoginHandler on the global window object
-  This function will be triggered when the admin submits their login credentials
+    // Check if already logged in
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+        const [username, password, role] = atob(token).split(':');
+        if (role === 'admin') {
+            window.location.href = '/admin/dashboard';
+        } else if (role === 'doctor') {
+            window.location.href = '/doctor/dashboard';
+        }
+    } else {
+        document.body.appendChild(loginForm);
+    }
 
-  Step 1: Get the entered username and password from the input fields
-  Step 2: Create an admin object with these credentials
+    // Logout function
+    window.logout = () => {
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('userRole');
+        window.location.href = '/';
+    };
 
-  Step 3: Use fetch() to send a POST request to the ADMIN_API endpoint
-    - Set method to POST
-    - Add headers with 'Content-Type: application/json'
-    - Convert the admin object to JSON and send in the body
-
-  Step 4: If the response is successful:
-    - Parse the JSON response to get the token
-    - Store the token in localStorage
-    - Call selectRole('admin') to proceed with admin-specific behavior
-
-  Step 5: If login fails or credentials are invalid:
-    - Show an alert with an error message
-
-  Step 6: Wrap everything in a try-catch to handle network or server errors
-    - Show a generic error message if something goes wrong
-
-
-  Define a function named doctorLoginHandler on the global window object
-  This function will be triggered when a doctor submits their login credentials
-
-  Step 1: Get the entered email and password from the input fields
-  Step 2: Create a doctor object with these credentials
-
-  Step 3: Use fetch() to send a POST request to the DOCTOR_API endpoint
-    - Include headers and request body similar to admin login
-
-  Step 4: If login is successful:
-    - Parse the JSON response to get the token
-    - Store the token in localStorage
-    - Call selectRole('doctor') to proceed with doctor-specific behavior
-
-  Step 5: If login fails:
-    - Show an alert for invalid credentials
-
-  Step 6: Wrap in a try-catch block to handle errors gracefully
-    - Log the error to the console
-    - Show a generic error message
-*/
+    // Export for reuse
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = { logout };
+    }
+    window.logout = logout;
+});

@@ -1,53 +1,47 @@
-/*
-  Import the base API URL from the config file
-  Define a constant DOCTOR_API to hold the full endpoint for doctor-related actions
+// doctorService.js
+const doctorService = (function () {
+    // Dummy data (replace with API calls later)
+    let doctors = [
+        { id: 1, firstName: 'John', lastName: 'Doe', specialization: 'Cardiology', email: 'john.doe@smartclinic.com' },
+        { id: 2, firstName: 'Jane', lastName: 'Smith', specialization: 'Pediatrics', email: 'jane.smith@smartclinic.com' },
+        { id: 3, firstName: 'Michael', lastName: 'Lee', specialization: 'Orthopedics', email: 'michael.lee@smartclinic.com' },
+        { id: 4, firstName: 'Sarah', lastName: 'Davis', specialization: 'Dermatology', email: 'sarah.davis@smartclinic.com' }
+    ];
 
+    return {
+        // Get all doctors
+        getAllDoctors: function () {
+            return [...doctors]; // Return a copy to prevent direct manipulation
+        },
 
-  Function: getDoctors
-  Purpose: Fetch the list of all doctors from the API
+        // Add a new doctor
+        addDoctor: function (doctor) {
+            doctor.id = doctors.length + 1;
+            doctors.push(doctor);
+            return doctor;
+        },
 
-   Use fetch() to send a GET request to the DOCTOR_API endpoint
-   Convert the response to JSON
-   Return the 'doctors' array from the response
-   If there's an error (e.g., network issue), log it and return an empty array
+        // Delete a doctor by ID
+        deleteDoctor: function (id) {
+            const index = doctors.findIndex(d => d.id === id);
+            if (index !== -1) {
+                doctors.splice(index, 1);
+                return true;
+            }
+            return false;
+        },
 
+        // Search doctors by name
+        searchDoctors: function (searchTerm) {
+            return doctors.filter(doctor =>
+                `${doctor.firstName} ${doctor.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+    };
+})();
 
-  Function: deleteDoctor
-  Purpose: Delete a specific doctor using their ID and an authentication token
-
-   Use fetch() with the DELETE method
-    - The URL includes the doctor ID and token as path parameters
-   Convert the response to JSON
-   Return an object with:
-    - success: true if deletion was successful
-    - message: message from the server
-   If an error occurs, log it and return a default failure response
-
-
-  Function: saveDoctor
-  Purpose: Save (create) a new doctor using a POST request
-
-   Use fetch() with the POST method
-    - URL includes the token in the path
-    - Set headers to specify JSON content type
-    - Convert the doctor object to JSON in the request body
-
-   Parse the JSON response and return:
-    - success: whether the request succeeded
-    - message: from the server
-
-   Catch and log errors
-    - Return a failure response if an error occurs
-
-
-  Function: filterDoctors
-  Purpose: Fetch doctors based on filtering criteria (name, time, and specialty)
-
-   Use fetch() with the GET method
-    - Include the name, time, and specialty as URL path parameters
-   Check if the response is OK
-    - If yes, parse and return the doctor data
-    - If no, log the error and return an object with an empty 'doctors' array
-
-   Catch any other errors, alert the user, and return a default empty result
-*/
+// Export for reuse
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = doctorService;
+}
+window.doctorService = doctorService;

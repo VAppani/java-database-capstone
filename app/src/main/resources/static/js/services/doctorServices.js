@@ -1,6 +1,8 @@
 // doctorService.js
 const doctorService = (function () {
-    // Dummy data (replace with API calls later)
+    const API_BASE_URL = 'http://localhost:8080/api'; // Adjust based on your Spring Boot port
+
+    // Fallback dummy data
     let doctors = [
         { id: 1, firstName: 'John', lastName: 'Doe', specialization: 'Cardiology', email: 'john.doe@smartclinic.com' },
         { id: 2, firstName: 'Jane', lastName: 'Smith', specialization: 'Pediatrics', email: 'jane.smith@smartclinic.com' },
@@ -8,27 +10,67 @@ const doctorService = (function () {
         { id: 4, firstName: 'Sarah', lastName: 'Davis', specialization: 'Dermatology', email: 'sarah.davis@smartclinic.com' }
     ];
 
+    async function fetchDoctors() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/doctors`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
+            });
+            if (response.ok) {
+                doctors = await response.json();
+            } else {
+                console.warn('API failed, using dummy data');
+            }
+        } catch (error) {
+            console.error('Error fetching doctors:', error);
+        }
+        return [...doctors];
+    }
+
     return {
         // Get all doctors
-        getAllDoctors: function () {
-            return [...doctors]; // Return a copy to prevent direct manipulation
+        getAllDoctors: async function () {
+            return await fetchDoctors();
         },
 
         // Add a new doctor
-        addDoctor: function (doctor) {
-            doctor.id = doctors.length + 1;
-            doctors.push(doctor);
-            return doctor;
+        addDoctor: async function (doctor) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/doctors`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+                    },
+                    body: JSON.stringify(doctor)
+                });
+                if (response.ok) {
+                    const newDoctor = await response.json();
+                    doctors.push(newDoctor);
+                    return newDoctor;
+                }
+                throw new Error('Failed to add doctor');
+            } catch (error) {
+                console.error('Error adding doctor:', error);
+                return null;
+            }
         },
 
         // Delete a doctor by ID
-        deleteDoctor: function (id) {
-            const index = doctors.findIndex(d => d.id === id);
-            if (index !== -1) {
-                doctors.splice(index, 1);
-                return true;
+        deleteDoctor: async function (id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/doctors/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
+                });
+                if (response.ok) {
+                    doctors = doctors.filter(d => d.id !== id);
+                    return true;
+                }
+                throw new Error('Failed to delete doctor');
+            } catch (error) {
+                console.error('Error deleting doctor:', error);
+                return false;
             }
-            return false;
         },
 
         // Search doctors by name

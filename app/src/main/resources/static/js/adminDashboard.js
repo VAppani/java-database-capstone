@@ -10,10 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const addDoctorForm = document.getElementById('addDoctorForm');
 
     // Use doctorService
-    let doctors = doctorService.getAllDoctors();
+    async function loadDoctors() {
+        return await doctorService.getAllDoctors() || [];
+    }
 
     // Display Doctors
-    function displayDoctors(doctorsToShow) {
+    async function displayDoctors(doctorsToShow) {
         doctorList.innerHTML = '';
         doctorsToShow.forEach(doctor => {
             const doctorCard = createDoctorCard(doctor);
@@ -22,10 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial Display
-    displayDoctors(doctors);
+    loadDoctors().then(doctors => displayDoctors(doctors));
 
     // Search Functionality
-    doctorSearch.addEventListener('input', () => {
+    doctorSearch.addEventListener('input', async () => {
         const searchTerm = doctorSearch.value.toLowerCase();
         const filteredDoctors = doctorService.searchDoctors(searchTerm);
         displayDoctors(filteredDoctors);
@@ -33,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Filter Functionality
     function applyFilters() {
-        let filteredDoctors = [...doctorService.getAllDoctors()];
+        let filteredDoctors = [...(doctorService.getAllDoctors() || [])];
         const timeValue = timeFilter.value;
         const specialtyValue = specialtyFilter.value;
 
@@ -70,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Add Doctor Form Submission
-    addDoctorForm.addEventListener('submit', (e) => {
+    addDoctorForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newDoctor = {
             firstName: document.getElementById('firstName').value,
@@ -78,11 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
             specialization: document.getElementById('specialization').value,
             email: document.getElementById('email').value
         };
-        doctorService.addDoctor(newDoctor);
-        displayDoctors(doctorService.getAllDoctors());
+        await doctorService.addDoctor(newDoctor);
+        loadDoctors().then(doctors => displayDoctors(doctors));
         addDoctorModal.style.display = 'none';
         addDoctorForm.reset();
-        // TODO: Add API call to save to backend
+        // TODO: Add real API success check
         console.log('New doctor added:', newDoctor);
     });
 });
